@@ -1,13 +1,6 @@
-# Simple Node Application
+# LangSmith Sandbox
 
-Includes:
-
-- ES6 Modules
-- Typescript
-- Express
-- Debug support in VS Code
-
-Inspired by: https://medium.com/create-a-server-with-nodemon-express-typescript/create-a-server-with-nodemon-express-typescript-f7c88fb5ee71
+Guide: https://docs.smith.langchain.com/
 
 ## Setup
 
