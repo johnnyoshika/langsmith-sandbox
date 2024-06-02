@@ -1,11 +1,44 @@
 import 'dotenv/config';
+import { OpenAI } from 'openai';
+import { traceable } from 'langsmith/traceable';
+import { wrapOpenAI } from 'langsmith/wrappers';
 import express from 'express';
 const app = express();
 
-app.get('/', (req, res) => {
-  res.send(
-    `Hi, process.env.SOME_ENV_VARIABLE is ${process.env.SOME_ENV_VARIABLE}`,
+app.get('/trace', async (req, res) => {
+  // Auto-trace LLM calls in-context
+  const client = wrapOpenAI(new OpenAI());
+  // Auto-trace this function
+  const pipeline = traceable(
+    async (
+      messages: {
+        role: 'system' | 'assistant' | 'user';
+        content: string;
+      }[],
+    ) => {
+      const result = await client.chat.completions.create({
+        messages,
+        model: 'gpt-3.5-turbo',
+      });
+      return result.choices[0].message.content;
+    },
   );
+
+  const response = await pipeline([
+    { role: 'system', content: 'You are a helpful chatbot' },
+    { role: 'user', content: 'I would like help with Math.' },
+    {
+      role: 'assistant',
+      content: 'Sure, what would you like help with?',
+    },
+    {
+      role: 'user',
+      content:
+        'What is the square root of 16? Provide the answer and an explantion.',
+    },
+  ]);
+
+  res.send(response);
 });
 
 const PORT = process.env.PORT || 8000;
