@@ -52,6 +52,8 @@ app.get('/prompt', async (req, res) => {
 
   const model = new ChatOpenAI({
     model: 'gpt-4o',
+    temperature: 0,
+    topP: 0.9,
     modelKwargs: {
       response_format: {
         type: 'json_object',
