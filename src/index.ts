@@ -2,7 +2,12 @@ import 'dotenv/config';
 import { OpenAI } from 'openai';
 import { traceable } from 'langsmith/traceable';
 import { wrapOpenAI } from 'langsmith/wrappers';
+import * as hub from 'langchain/hub';
+import { ChatPromptTemplate } from '@langchain/core/prompts';
+import { ChatOpenAI } from '@langchain/openai';
 import express from 'express';
+import { getTextFromMessageContent } from 'getTextFromMessageContent';
+
 const app = express();
 
 app.get('/trace', async (req, res) => {
@@ -25,6 +30,22 @@ app.get('/trace', async (req, res) => {
   );
 
   res.send(response);
+});
+
+app.get('/prompt', async (req, res) => {
+  const prompt = await hub.pull<ChatPromptTemplate>('blooms');
+
+  const model = new ChatOpenAI();
+  const runnable = prompt.pipe(model);
+
+  const result = await runnable.invoke({
+    question: 'What is 1 + 1?',
+  });
+
+  const content = getTextFromMessageContent(result.content);
+  const json = JSON.parse(content) as { level: number };
+
+  res.send(json);
 });
 
 const PORT = process.env.PORT || 8000;
