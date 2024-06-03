@@ -50,7 +50,14 @@ app.get('/prompt', async (req, res) => {
 
   const prompt = await hub.pull<ChatPromptTemplate>('blooms');
 
-  const model = new ChatOpenAI();
+  const model = new ChatOpenAI({
+    model: 'gpt-4o',
+    modelKwargs: {
+      response_format: {
+        type: 'json_object',
+      },
+    },
+  });
   const runnable = prompt.pipe(model);
 
   const rag = traceable(
@@ -79,9 +86,14 @@ app.get('/prompt', async (req, res) => {
   );
 
   const content = getTextFromMessageContent(result.content);
-  const json = JSON.parse(content) as { level: number };
 
-  res.send(json);
+  try {
+    const content = getTextFromMessageContent(result.content);
+    res.send(JSON.parse(content));
+  } catch (error) {
+    res.status(500).send({ error: 'Failed to parse JSON' });
+    return;
+  }
 });
 
 const PORT = process.env.PORT || 8000;
