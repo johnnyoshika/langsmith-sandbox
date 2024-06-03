@@ -87,8 +87,6 @@ app.get('/prompt', async (req, res) => {
     "How does Marcus's journey across the rickety bridge illustrate the themes of courage and self-sacrifice in the story?",
   );
 
-  const content = getTextFromMessageContent(result.content);
-
   try {
     const content = getTextFromMessageContent(result.content);
     res.send(JSON.parse(content));
